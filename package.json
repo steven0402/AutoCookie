@@ -1,6 +1,6 @@
 {
   "name": "cookie-clicker-natural-optimizer",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "description": "Cookie Clicker 自然成長、升級與重生自動化 userscript",
   "scripts": {

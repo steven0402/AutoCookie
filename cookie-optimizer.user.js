@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Cookie Clicker 自然成長助手
 // @namespace    local.cookie-optimizer
-// @version      1.0.0
+// @version      1.0.1
 // @description  依增量收益與等待時間購買，收集金餅，管理升天與重生。使用正常遊戲成本。
 // @match        https://orteil.dashnet.org/cookieclicker/*
 // @match        http://orteil.dashnet.org/cookieclicker/*
@@ -20,7 +20,7 @@
 })(typeof window === 'object' ? window : globalThis, function () {
   'use strict';
 
-  const VERSION = '1.0.0';
+  const VERSION = '1.0.1';
   const DEFAULTS = Object.freeze({
     enabled: true,
     autoClick: true,
@@ -280,7 +280,8 @@
       if (b.locked || typeof b.getPrice !== 'function') continue;
       evaluate({ kind: 'building', item: b, count: 1, price: buildingPrice(b, 1), changes: [{ building: b, count: 1 }] });
       // Evaluate the complete cost of a nearby building threshold AND its upgrade.
-      for (const u of b.tieredUpgrades || []) {
+      // The game keys this object by tier; it is not an iterable array.
+      for (const u of Object.values(b.tieredUpgrades || {})) {
         const tier = (g.Tiers || {})[u.tier];
         const count = tier ? tier.unlock - b.amount : 0;
         if (count < 1 || count > config.maxBundle || !allowedUpgrade(g, u, config, true)) continue;

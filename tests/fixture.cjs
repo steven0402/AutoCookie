@@ -45,7 +45,7 @@ function fixture() {
       let cps = 0;
       for (const b of g.ObjectsById) {
         b.storedCps = b.baseCps;
-        for (const u of b.tieredUpgrades) if (u.bought) b.storedCps *= u.mult || 2;
+        for (const u of Object.values(b.tieredUpgrades)) if (u.bought) b.storedCps *= u.mult || 2;
         b.storedTotalCps = b.amount * b.storedCps;
         cps += b.storedTotalCps;
         g.cookiesPsByType[b.name] = b.storedTotalCps;
@@ -72,7 +72,7 @@ function fixture() {
     const b = {
       id: g.ObjectsById.length, name, dname: name, amount, bought: amount,
       highest: amount, basePrice: price, baseCps: cps, free: 0, level: 0,
-      tieredUpgrades: [], storedCps: cps, storedTotalCps: cps * amount,
+      tieredUpgrades: {}, storedCps: cps, storedTotalCps: cps * amount,
       getPrice() { return Math.ceil(price * Math.pow(1.15, b.amount - amount)); },
       buy(count = 1) {
         if (g.buyMode === -1) return b.sell(g.buyBulk);

@@ -28,7 +28,7 @@ function installOfficial(g, source) {
   });
   for (const b of g.ObjectsById) b.cps = () => {
     let cps = b.baseCps;
-    for (const u of b.tieredUpgrades) if (u.bought) cps *= u.mult || 2;
+    for (const u of Object.values(b.tieredUpgrades)) if (u.bought) cps *= u.mult || 2;
     return cps;
   };
   // Reuse only the three calculation functions, with Game bound to the fixture.
@@ -56,8 +56,12 @@ function run(sourcePath) {
   const kitten = f.upgrade('Kitten helpers', 9000, { kitten: 1 });
   const mouse = f.upgrade('Plastic mouse', 1000);
   installOfficial(f.g, source); f.calculate();
+  assert.match(source, /this\.tieredUpgrades\s*=\s*\{\s*\}/, 'fixture matches the official tier collection shape');
+  assert.equal(Array.isArray(grandmas.tieredUpgrades), false);
   assert.ok(Math.abs(f.g.cookiesPs - 11) < 1e-9);
   const before = snapshot(f.g);
+  assert.ok(O.plan(f.g, O.sanitize({ reserveMode: 'off' }), 20).best, 'official gains planner accepts object-keyed tiers');
+  assert.equal(before, snapshot(f.g), 'planning with official gains restores the original state');
   const after = O.probe(f.g, [{ upgrade: kitten }], 20);
   assert.ok(Math.abs(after.passive - 15.4) < 1e-9, 'real milk and kitten multiplier');
   assert.equal(before, snapshot(f.g), 'real gains rollback');
@@ -73,7 +77,7 @@ function run(sourcePath) {
   assert.throws(() => O.probe(f.g, [{ building: grandmas, count: 5 }]), /building failure/);
   assert.equal(snapshot(f.g), withBuff, 'real calculation failure rollback');
   grandmas.cps = oldCps;
-  console.log('Official CalculateGains + mouseCps: 7 assertions passed');
+  console.log('Official calculation functions and object-keyed tier regression checks passed');
 }
 
 module.exports = { installOfficial, run };

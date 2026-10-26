@@ -87,10 +87,37 @@ function run() {
   test('planner includes total building-threshold AND upgrade cost', () => {
     const f = fixture(); const b = f.building('Cursor', 4, 10, 1);
     const u = f.upgrade('Tier 2', 10, { unlocked: 0, tier: 2, buildingTie: b, mult: 100 });
-    b.tieredUpgrades.push(u); f.g.Tiers[2] = { unlock: 5 }; f.calculate();
+    b.tieredUpgrades[2] = u; f.g.Tiers[2] = { unlock: 5 }; f.calculate();
     const candidate = O.plan(f.g, config(), 0).best;
     assert.equal(candidate.kind, 'bundle'); assert.equal(candidate.count, 1); assert.equal(candidate.price, 20);
     assert.equal(candidate.delta, 496); assert.equal(u.unlocked, 0); assert.equal(u.bought, 0);
+  });
+  test('empty object-keyed tier collections do not interrupt normal building purchases', () => {
+    const f = fixture(); const b = f.building('Cursor', 0, 15, 1); f.calculate();
+    assert.deepEqual(b.tieredUpgrades, {});
+    const e = engineFor(f, { autoAscend: false });
+    for (let i = 0; i < 3; i++) e.slowTick();
+    assert.ok(b.amount > 0); assert.equal(e.config.enabled, true);
+    assert.ok(!e.logs.some(log => log.message.startsWith('錯誤')));
+  });
+  test('tier dictionaries iterate numeric and named tier entries without mutating them', () => {
+    const f = fixture(); const b = f.building('Cursor', 4, 10, 1);
+    const regular = f.upgrade('Tier 2', 10, { unlocked: 0, tier: 2, mult: 100 });
+    const fortune = f.upgrade('Fortune', 1, { unlocked: 0, tier: 'fortune', mult: 2 });
+    b.tieredUpgrades = { 2: regular, fortune };
+    f.g.Tiers = { 2: { unlock: 5 }, fortune: { unlock: -1 } }; f.calculate();
+    const tiers = b.tieredUpgrades;
+    const p = O.plan(f.g, config(), 0);
+    assert.equal(p.best.upgrade, regular);
+    assert.ok(!p.candidates.some(c => c.upgrade === fortune));
+    assert.equal(b.tieredUpgrades, tiers);
+    assert.deepEqual(Object.values(tiers).map(u => u.bought), [0, 0]);
+  });
+  test('array tier collections remain compatible with planning', () => {
+    const f = fixture(); const b = f.building('Cursor', 4, 10, 1);
+    const u = f.upgrade('Tier 2', 10, { unlocked: 0, tier: 2, mult: 100 });
+    b.tieredUpgrades = [u]; f.g.Tiers[2] = { unlock: 5 }; f.calculate();
+    assert.equal(O.plan(f.g, config(), 0).best.upgrade, u);
   });
   test('planner can wait for an upgrade rather than waste savings on bad buildings', () => {
     const f = fixture(); f.building('Cursor', 10, 25, 1);

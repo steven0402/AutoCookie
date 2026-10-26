@@ -105,6 +105,7 @@ async function main() {
     const source = await fs.readFile(path.resolve(__dirname, '../cookie-optimizer.user.js'), 'utf8');
     await evaluate(source);
     await until(() => evaluate('Boolean(window.CookieOptimizer && CookieOptimizer.engine)'));
+    if (!live) assert.equal(await evaluate('Array.isArray(Game.ObjectsById[0].tieredUpgrades)'), false, 'browser fixture uses official object-keyed tiers');
     // This seeded bakery is temporary. The userscript itself never grants currency.
     await evaluate(`CookieOptimizer.configure({autoAscend:false,autoDragon:false,autoSanta:false,reserveMode:'off'}); Game.Earn(1e12);`);
     await delay(2500);
@@ -148,6 +149,7 @@ async function main() {
     assert.equal(ascension.legacy, 1); assert.equal(ascension.prompt, 0); assert.equal(ascension.backups, 1);
     assert.ok(!ascension.logs.some(log => log.message.startsWith('錯誤')));
     console.log('Browser ascension:', JSON.stringify(ascension));
+    assert.deepEqual(exceptions, [], 'no uncaught browser exceptions');
     const artifactDir = path.resolve(__dirname, '../.artifacts');
     await fs.mkdir(artifactDir, { recursive: true });
     const png = await page('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false });

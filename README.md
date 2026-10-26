@@ -14,6 +14,12 @@
 
 適用官方現代網頁版與 beta 路徑；不適用 Classic、手機原生版或其他網站的仿製遊戲。未在每個 beta 版本逐一驗證。
 
+## 更新與錯誤排除
+
+`v1.0.1` 修正 `Object is not iterable`：官方的建築階級升級資料 `tieredUpgrades` 是以階級為鍵的物件，現在會正確讀取物件中的升級資料，測試資料也已同步改成官方結構。
+
+已安裝 Tampermonkey 時，可開啟 [安裝／更新腳本](https://github.com/steven0402/AutoCookie/raw/refs/heads/main/cookie-optimizer.user.js)，依提示更新；也可將最新版完整內容貼回原腳本並儲存。重新整理遊戲後，面板版本應顯示 `v1.0.1`。舊版若曾因連續錯誤自動暫停，請按「繼續」；不需清除存檔或網站資料。
+
 ## 會做什麼
 
 | 功能 | 行為 |
